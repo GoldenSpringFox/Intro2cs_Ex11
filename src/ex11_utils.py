@@ -1,23 +1,36 @@
+########################################
+#              Imports                 #
+########################################
+
 from functools import reduce
 from typing import List, Tuple, Iterable, Optional
 
-Board = List[List[str]]
-Path = List[Tuple[int, int]]
+########################################
+#          Constants / Types           #
+########################################
 
+Board = List[List[str]]
+Cell = Tuple[int, int]
+Path = List[Cell]
+
+########################################
+#            Public Methods            #
+########################################
 
 def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[str]:
-    for i in range(len(path)):
-        if not ((0 <= path[i][0] <= 3) and (0 <= path[i][1] <= 3)):
+    board_height = len(board)
+    board_width = len(board[0])
+
+    word = ""
+    for i, current_cell in enumerate(path):
+        if not _are_cells_on_board(board_height, board_width, current_cell) or \
+            not _are_cells_sequencially_touching(*path[i:i+2]) or \
+            _is_cell_repeating(*path[i:]):
             return
-        
-        if i == len(path) - 1:
-            continue
-        if (abs(path[i][0] - path[i+1][0]) > 1) or (abs(path[i][1] - path[i+1][1]) > 1):
-            return
+        word += board[current_cell[0]][current_cell[1]]
     
-    word = reduce(lambda word,cell: word + board[cell[0]][cell[1]], path, '')
-    if word in words:
-        return True    
+
+    return word if words is None or word in words else None
 
 
 def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
@@ -27,7 +40,31 @@ def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path
         for j in range(len(row)):
             find_length_n_paths_helper([(i,j)], n, board, words)
 
-def find_length_n_paths_helper(current_path: Path, max_length: int, board: Board, words: Iterable[str], paths_found: List[Path]=None) -> List[Path]:
+
+########################################
+#           Private Methods            #
+########################################
+
+# --------------------- #
+# --- is_valid_path --- #
+# --------------------- #
+
+def _are_cells_on_board(board_height: int, board_width: int, *cells: Cell):
+    return all((0 <= cell[0] < board_height) and (0 <= cell[1] < board_width) for cell in cells)
+
+def _are_cells_sequencially_touching(*cells: Cell):
+    for i in range(len(cells) - 1):
+        if (abs(cells[i][0] - cells[i+1][0]) > 1) or (abs(cells[i][1] - cells[i+1][1]) > 1):
+            return False
+    return True
+
+def _is_cell_repeating(*cells: Cell):
+    for i in range(len(cells)):
+        if cells[i] in cells[i+1:]:
+            return True
+    return False
+
+
     if paths_found is None:
         paths_found = []
     if not is_valid_path(board, current_path, words):
@@ -44,9 +81,5 @@ def find_length_n_paths_helper(current_path: Path, max_length: int, board: Board
 
 
 
-def find_length_n_words(n: int, board: Board, words: Iterable[str]) -> List[Path]:
-    pass
 
 
-def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
-    pass
