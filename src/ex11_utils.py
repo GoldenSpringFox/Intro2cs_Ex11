@@ -45,6 +45,22 @@ def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path
     return paths
 
 
+def find_length_n_words(n: int, board: Board, words: Iterable[str]) -> List[Path]:
+    length_n_words = list(filter(lambda word: len(word) == n, words))
+    paths = []
+    if n < 1:
+        return paths
+    
+    for i, row in enumerate(board):
+        for j in range(len(row)):
+            paths += _find_paths_for_words([(i,j)], n-1, board, length_n_words)
+    
+    return paths
+
+
+def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
+    pass
+
 
 
 ########################################
@@ -94,4 +110,28 @@ def _get_surrounding_cells(cell: Cell) -> List[Cell]:
     return [(cell[0] + i, cell[1] + j) for i in range(-1,2) for j in range(-1,2) if not i == j == 0]
 
 
+# --------------------------- #
+# --- find_length_n_words --- #
+# --------------------------- #
 
+def _find_paths_for_words(current_path: Path, remaining_cells: int, board: Board, words: Iterable[str], paths_found: List[Path]=None) -> List[Path]:
+    if paths_found is None:
+        paths_found = []
+    
+    word = is_valid_path(board, current_path, None)
+    if word is None:
+        return paths_found
+    
+    words = _get_words_with_prefix(word, words)    
+    if remaining_cells == 0:
+        for word in words:
+            paths_found.append(current_path)
+        return paths_found
+    
+    for cell in _get_surrounding_cells(current_path[-1]):
+        _find_paths_for_words(current_path + [cell], remaining_cells - 1, board, words, paths_found)
+    
+    return paths_found
+
+def _get_words_with_prefix(prefix: str, words: Iterable[str]) -> List[str]:
+    return list(filter(lambda word: prefix == word[:len(prefix)], words))
