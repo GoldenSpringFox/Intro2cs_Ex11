@@ -21,7 +21,27 @@ def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[st
 
 
 def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
-    pass
+    if n < 1:
+        return
+    for i, row in enumerate(board):
+        for j in range(len(row)):
+            find_length_n_paths_helper([(i,j)], n, board, words)
+
+def find_length_n_paths_helper(current_path: Path, max_length: int, board: Board, words: Iterable[str], paths_found: List[Path]=None) -> List[Path]:
+    if paths_found is None:
+        paths_found = []
+    if not is_valid_path(board, current_path, words):
+        return paths_found
+    if len(current_path) == max_length:
+        paths_found.append(current_path)
+        return paths_found
+    for i in range(-1,2):
+        for j in range(-1,2):
+            if (i,j) in current_path:
+                continue
+            
+            find_length_n_paths_helper(current_path + [(i,j)], max_length, board, words, paths_found)
+
 
 
 def find_length_n_words(n: int, board: Board, words: Iterable[str]) -> List[Path]:
