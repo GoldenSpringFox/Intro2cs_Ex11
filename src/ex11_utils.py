@@ -34,11 +34,17 @@ def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[st
 
 
 def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
+    paths = []
     if n < 1:
-        return
+        return paths
+    
     for i, row in enumerate(board):
         for j in range(len(row)):
-            find_length_n_paths_helper([(i,j)], n, board, words)
+            paths += _find_length_n_paths_helper([(i,j)], n-1, board, words)
+    
+    return paths
+
+
 
 
 ########################################
@@ -65,21 +71,27 @@ def _is_cell_repeating(*cells: Cell):
     return False
 
 
+# --------------------------- #
+# --- find_length_n_paths --- #
+# --------------------------- #
+
+def _find_length_n_paths_helper(current_path: Path, remaining_cells: int, board: Board, words: Iterable[str], paths_found: List[Path]=None) -> List[Path]:
     if paths_found is None:
         paths_found = []
-    if not is_valid_path(board, current_path, words):
+
+    if remaining_cells == 0:
+        if is_valid_path(board, current_path, words):
+            paths_found.append(current_path)
         return paths_found
-    if len(current_path) == max_length:
-        paths_found.append(current_path)
-        return paths_found
-    for i in range(-1,2):
-        for j in range(-1,2):
-            if (i,j) in current_path:
-                continue
-            
-            find_length_n_paths_helper(current_path + [(i,j)], max_length, board, words, paths_found)
+    
+    for cell in _get_surrounding_cells(current_path[-1]):
+        _find_length_n_paths_helper(current_path + [cell], remaining_cells - 1, board, words, paths_found)
+    
+    return paths_found
 
 
+def _get_surrounding_cells(cell: Cell) -> List[Cell]:
+    return [(cell[0] + i, cell[1] + j) for i in range(-1,2) for j in range(-1,2) if not i == j == 0]
 
 
 
