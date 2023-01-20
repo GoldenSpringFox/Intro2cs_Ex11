@@ -2,7 +2,6 @@
 #              Imports                 #
 ########################################
 
-from functools import reduce
 from typing import List, Tuple, Iterable, Optional
 
 ########################################
@@ -34,35 +33,23 @@ def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[st
 
 
 def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
-    paths = []
-    if n < 1:
-        return paths
-    
-    for i, row in enumerate(board):
-        for j in range(len(row)):
-            paths += _find_paths_for_words([(i,j)], n-1, board, words)
-    
-    return paths
+    paths = _find_paths_for_words(board, words, n)
+    return list(filter(lambda path: len(path) == n, paths))
 
 
 def find_length_n_words(n: int, board: Board, words: Iterable[str]) -> List[Path]:
     length_n_words = list(filter(lambda word: len(word) == n, words))
-    return find_length_n_paths(n, board, length_n_words)
+    return _find_paths_for_words(board, length_n_words, n)
 
 
 def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
-    # the current implementation relies on the fact that score is uniquely identified by the word's length
-    word_lengths = list(set(map(lambda word: len(word), words)))
-    word_lengths.sort(reverse=True)
-    paths = []
-    if word_lengths is None:
-        return paths
+    paths = _find_paths_for_words(board, words)
+    if not paths:
+        return []
+    paths = _unique_path_per_word(board, paths)
+    max_score = max(map(lambda path: _path_score(path), paths))
+    return list(filter(lambda path: _path_score(path) == max_score, paths))
     
-    for length in word_lengths:
-        paths += find_length_n_paths(length, board, words)
-        if len(paths) > 0:
-            return paths
-    return paths
 
 
 
@@ -94,22 +81,32 @@ def _is_cell_repeating(*cells: Cell):
 # --- find_length_n_paths --- #
 # --------------------------- #
 
-def _find_paths_for_words(current_path: Path, remaining_cells: int, board: Board, words: Iterable[str], paths_found: List[Path] = None) -> List[Path]:
+def _find_paths_for_words(board: Board, words: Iterable[str], max_path_length: int = -1, current_path: Path = None, paths_found: List[Path] = None) -> List[Path]:
+    # Initialize dynamic arguments
+    if current_path is None:
+        return [path for i, row in enumerate(board) for j in range(len(row)) for path in _find_paths_for_words(board, words, max_path_length - 1, [(i,j)])] if max_path_length != 0 else []
+    
     if paths_found is None:
         paths_found = []
     
-    word = is_valid_path(board, current_path, None)
-    if word is None:
+    # Break conditions
+    word = _get_word_from_path(board, current_path)
+    if not word:
         return paths_found
     
-    words = _get_words_with_prefix(word, words)    
-    if remaining_cells == 0:
-        for word in words:
-            paths_found.append(current_path)
+    words = _get_words_with_prefix(word, words)
+    if not words:
         return paths_found
     
+    if word in words:
+        paths_found.append(current_path)
+    
+    if max_path_length == 0:
+        return paths_found
+
+    # Recursive calls
     for cell in _get_surrounding_cells(current_path[-1]):
-        _find_paths_for_words(current_path + [cell], remaining_cells - 1, board, words, paths_found)
+        _find_paths_for_words(board, words, max_path_length - 1, current_path + [cell], paths_found)
     
     return paths_found
 
@@ -125,5 +122,16 @@ def _get_surrounding_cells(cell: Cell) -> List[Cell]:
 # --- max_score_paths --- #
 # ----------------------- #
 
-def _word_score(word):
-    return len(word) ** 2
+def _path_score(path: Path):
+    return len(path) ** 2
+
+def _get_word_from_path(board: Board, path: Path):
+    return is_valid_path(board, path, None)
+
+def _unique_path_per_word(board: Board, paths: List[Path]) -> List[Path]:
+    word_path_dict = {}
+    for path in paths:
+        word = _get_word_from_path(board, path)
+        if word not in word_path_dict:
+            word_path_dict[word] = path
+    return list(word_path_dict.values())

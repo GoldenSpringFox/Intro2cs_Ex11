@@ -1,5 +1,5 @@
 from ex11_utils import *
-from ex11_utils import _are_cells_on_board, _are_cells_sequencially_touching, _is_cell_repeating, _get_surrounding_cells, _get_words_with_prefix
+from ex11_utils import _are_cells_on_board, _are_cells_sequencially_touching, _is_cell_repeating, _get_surrounding_cells, _get_words_with_prefix, _unique_path_per_word
 
 def test__are_cells_on_board():
     assert not _are_cells_on_board(0, 1, (0,0))
@@ -62,6 +62,16 @@ def test_is_valid_path():
     assert is_valid_path(board, [(4,0)], ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']) is None
     assert is_valid_path(board, [(0,4)], ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']) is None
 
+    board = [
+        ['a', 'b', 'c'],
+        ['bc', 'ab', 'ca'],
+        [' ', 'abc', ' ']
+    ]
+    assert is_valid_path(board, [(0,0), (0,1), (0,2)], ['abc']) == 'abc'
+    assert is_valid_path(board, [(0,0), (1,0)], ['abc']) == 'abc'
+    assert is_valid_path(board, [(1,1), (0,2)], ['abc']) == 'abc'
+    assert is_valid_path(board, [(2,1)], ['abc']) == 'abc'
+
 
 def test__get_surrounding_cells():
     assert set(_get_surrounding_cells((1,3))) == set([(0,2), (0,3), (0,4), (1,2), (1,4), (2,2), (2,3), (2,4)])
@@ -95,6 +105,15 @@ def test_find_length_n_paths():
         [(1,1), (0,0)], [(1,1), (0,1)], [(1,1), (1,0)]
     ]
 
+    board = [
+        ['a', 'b', 'c'],
+        ['bc', 'ab', 'ca'],
+        [' ', 'abc', ' ']
+    ]
+    assert find_length_n_paths(3, board, ['abc']) == [[(0,0), (0,1), (0,2)]]
+    assert find_length_n_paths(2, board, ['abc']) == [[(0,0), (1,0)], [(1,1), (0,2)]]
+    assert find_length_n_paths(1, board, ['abc']) == [[(2,1)]]
+
 
 def test__get_words_with_prefix():
     assert set(_get_words_with_prefix('', [])) == set()
@@ -121,6 +140,18 @@ def test_find_length_n_words():
     board = [['a', 'a'], ['b', 'a']]
     assert find_length_n_words(1, board, ['a', 'c']) == [[(0,0)], [(0,1)], [(1,1)]]
 
+    board = [
+        ['a', 'b', 'c'],
+        ['bc', 'ab', 'ca'],
+        [' ', 'abc', ' ']
+    ]
+    assert find_length_n_words(3, board, ['abc']) == [
+        [(0,0), (0,1), (0,2)],
+        [(0,0), (1,0)],
+        [(1,1), (0,2)],
+        [(2,1)]
+        ]
+
 
 def test_max_score_paths():
     board = [
@@ -130,4 +161,47 @@ def test_max_score_paths():
         ['h', 'h', 'g', 'g']
     ]
     assert max_score_paths(board, []) == []
-    assert max_score_paths(board, ['a']) == [[(0,0)], [(1,0)]]
+    assert max_score_paths(board, ['a']) in [[[(0,0)]], [[(1,0)]]]
+    assert max_score_paths(board, ['f']) in [[[(2,2)]], [[(2,3)]]]
+    assert max_score_paths(board, ['ef']) == [[(2,1), (2,2)]]
+    assert max_score_paths(board, ['aaehecd']) in [
+        [[(0,0), (1,0), (2,0), (3,0), (2,1), (1,2), (0,3)]], 
+        [[(0,0), (1,0), (2,0), (3,1), (2,1), (1,2), (0,3)]],
+        [[(0,0), (1,0), (2,0), (3,0), (2,1), (1,2), (1,3)]], 
+        [[(0,0), (1,0), (2,0), (3,1), (2,1), (1,2), (1,3)]]
+        ]
+    assert max_score_paths(board, ['ccffb', 'ffecc']) == [
+        [(0,2), (1,2), (2,3), (2,2), (1,1)], 
+        [(2,3), (2,2), (2,1), (1,2), (0,2)]
+        ]
+    assert max_score_paths(board, ['ccffb', 'ffecb']) in [
+        [[(0,2), (1,2), (2,3), (2,2), (1,1)], [(2,3), (2,2), (2,1), (1,2), (0,1)]],
+        [[(0,2), (1,2), (2,3), (2,2), (1,1)], [(2,3), (2,2), (2,1), (1,2), (1,1)]]
+        ]
+    assert sorted(max_score_paths(board, ['ccffb', 'ffecb', 'acdfgh'])) in [
+        [[(0,2), (1,2), (2,3), (2,2), (1,1)], [(2,3), (2,2), (2,1), (1,2), (0,1)]],
+        [[(0,2), (1,2), (2,3), (2,2), (1,1)], [(2,3), (2,2), (2,1), (1,2), (1,1)]]
+        ]
+    
+    board = [
+        ['a', 'b', 'c'],
+        ['bc', 'ab', 'ca'],
+        [' ', 'abc', ' ']
+    ]
+    assert max_score_paths(board, ['abc']) == [[(0,0), (0,1), (0,2)]]
+    assert max_score_paths(board, ['cab']) in [[[(0,2), (1,1)]], [[(0,1), (1,2)]]]
+
+def test__unique_path_per_word():
+    board = [
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'c', 'd'],
+        ['e', 'e', 'f', 'f'],
+        ['h', 'h', 'g', 'g']
+    ]
+    assert _unique_path_per_word(board, [[(0,0), (0,1)], [(1,0), (1,1)]]) in [[[(0,0), (0,1)]], [[(1,0), (1,1)]]]
+    assert _unique_path_per_word(board, [[(0,0), (0,1)], [(1,0), (1,1)], [(2,2)], [(2,3)]]) in [
+        [[(0,0), (0,1)], [(2,2)]], 
+        [[(1,0), (1,1)], [(2,2)]],
+        [[(1,0), (0,1)], [(2,3)]],
+        [[(1,0), (1,1)], [(2,3)]]
+        ]
