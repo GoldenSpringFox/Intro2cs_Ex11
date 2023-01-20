@@ -51,7 +51,18 @@ def find_length_n_words(n: int, board: Board, words: Iterable[str]) -> List[Path
 
 
 def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
-    pass
+    # the current implementation relies on the fact that score is uniquely identified by the word's length
+    word_lengths = list(set(map(lambda word: len(word), words)))
+    word_lengths.sort(reverse=True)
+    paths = []
+    if word_lengths is None:
+        return paths
+    
+    for length in word_lengths:
+        paths += find_length_n_paths(length, board, words)
+        if len(paths) > 0:
+            return paths
+    return paths
 
 
 
@@ -83,7 +94,7 @@ def _is_cell_repeating(*cells: Cell):
 # --- find_length_n_paths --- #
 # --------------------------- #
 
-def _find_paths_for_words(current_path: Path, remaining_cells: int, board: Board, words: Iterable[str], paths_found: List[Path]=None) -> List[Path]:
+def _find_paths_for_words(current_path: Path, remaining_cells: int, board: Board, words: Iterable[str], paths_found: List[Path] = None) -> List[Path]:
     if paths_found is None:
         paths_found = []
     

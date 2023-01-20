@@ -120,3 +120,14 @@ def test_find_length_n_words():
     
     board = [['a', 'a'], ['b', 'a']]
     assert find_length_n_words(1, board, ['a', 'c']) == [[(0,0)], [(0,1)], [(1,1)]]
+
+
+def test_max_score_paths():
+    board = [
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'c', 'd'],
+        ['e', 'e', 'f', 'f'],
+        ['h', 'h', 'g', 'g']
+    ]
+    assert max_score_paths(board, []) == []
+    assert max_score_paths(board, ['a']) == [[(0,0)], [(1,0)]]
