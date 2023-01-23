@@ -1,13 +1,12 @@
 import tkinter as tk
-from src import boggle_board_randomizer
-
+import boggle_board_randomizer
 
 class BoggleGui:
 
     def __init__(self):
         self.__root = tk.Tk()
         self.__root.title('Boggle')
-        self._image1 = tk.PhotoImage(file='Boogle.png')
+        self._image1 = tk.PhotoImage(file='./images/Boogle.png')
         self.__canvas = tk.Canvas(self.__root, width=400,
                                   height=400)
         self.__canvas.create_image(0, 0, image=self._image1,
@@ -20,7 +19,7 @@ class BoggleGui:
 
         self.__game = tk.Toplevel()
         self.__game.title("Boggle")
-        self.__image2 = tk.PhotoImage(file='board3.png')
+        self.__image2 = tk.PhotoImage(file='./images/board3.png')
         self.__canvas2 = tk.Canvas(self.__game, width=400,
                                    height=400)
         self.__canvas2.create_image(0, 0, image=self.__image2,
@@ -60,7 +59,7 @@ class BoggleGui:
         self.__countdown.pack()
         self.__lose_screen = tk.Toplevel()
         self.__lose_screen.title('Boggle')
-        self.__image_lose = tk.PhotoImage(file='lose.png')
+        self.__image_lose = tk.PhotoImage(file='./images/lose.png')
         self.__canvas3 = tk.Canvas(self.__lose_screen, width=360,
                                    height=360)
         self.__canvas3.create_image(0, 0, image=self.__image_lose,
