@@ -12,11 +12,20 @@ class BoggleController:
         self.__model = BoggleModel(board, words)
         self.__gui = BoggleGui(board)
 
-        for cell in self._gui.get_button_coordinates():
+        for cell in self.__gui.get_button_coordinates():
             action = self.create_button_action(cell)
             self.__gui.set_button_command(cell, action)
         self.__gui.set_display(self.__model.current_word)
-    
+        submit_cmd = self.submit_button()
+        self.__gui.set_cmd_for_submit(submit_cmd)
+
+    def submit_button(self):
+        def submit():
+            if self.__model.submit():
+                self.__gui.submited(True)
+            else:
+                self.__gui.submited(False)
+        return submit
     def create_button_action(self, cell: Cell):
         def action():
             self.__model.soft_path_update(cell)

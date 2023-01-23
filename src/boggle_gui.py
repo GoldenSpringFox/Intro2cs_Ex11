@@ -1,5 +1,5 @@
 import tkinter as tk
-import boggle_board_randomizer
+
 
 class BoggleGui:
 
@@ -27,23 +27,26 @@ class BoggleGui:
         self.__canvas2.pack()
         self.__game.withdraw()
         self.__board = board
-        self.__btn_lst = []
-
+        self.__btn_dct = {}
+        row = 0
         for _ in self.__board:
+            col = 0
             for letter in _:
-                self.__btn_lst.append(tk.Button(self.__game, text=str(letter), bg='white', width=8, height=2))
-        inx = self.__btn_lst[:]
+                self.__btn_dct[(row,col)] = tk.Button(self.__game, text=str(letter), bg='white', width=8, height=2)
+                col += 1
+            row += 1
+        lst = []
+        for i in self.__btn_dct.values():
+            lst.append(i)
+        inx = lst[:]
         for j in range(0, 280, 70):
             for i in range(0, 240, 60):
                 buttons_canvas = self.__canvas2.create_window(40 + j, 160 + i,
                                                               anchor="nw",
                                                               window=inx[0])
                 del inx[0]
+        self.__command_dct = {}
 
-        for btn in self.__btn_lst:
-            btn.config(command=lambda button=btn, letter=btn['text']: self._add_to_lst(letter, button))
-
-        self.__boggle_list = []
         self.__boggle_text = tk.Text(self.__game, height=1, width=30)
         self.__canvas2.create_window(50, 40,
                                      anchor="nw",
@@ -54,6 +57,14 @@ class BoggleGui:
         self.__canvas2.create_window(300, 40,
                                      anchor="nw",
                                      window=self.__clear_button)
+        self.__submit_btn = tk.Button(self.__game, text='submit answer', width=10, height=2, bg='grey', fg='red')
+        self.__canvas2.create_window(300, 90,
+                                     anchor="nw",
+                                     window=self.__submit_btn)
+        self.__sub_label = tk.Label(self.__game, text='', height=1, width=20)
+        self.__canvas2.create_window(50, 70,
+                                     anchor="nw",
+                                     window=self.__sub_label)
 
         self.__countdown = tk.Label(self.__game, font='Arial', text='')
         self.__countdown.pack()
@@ -84,23 +95,54 @@ class BoggleGui:
     def _openNewWindow(self):
         self.__game.deiconify()
 
+
+    def get_button_coordinates(self):
+        lst = []
+        for i in self.__btn_dct:
+            lst.append(i)
+        return lst
+
     def _clear(self):
-        self.__boggle_list = []
         self.__boggle_text.delete("1.0", "end")
-        for btn in self.__btn_lst:
+        for btn in self.__btn_dct.values():
             btn.config(bg='white')
 
+    def set_display(self, word):
+        if len(word) == 0:
+            pass
+        else:
+            self.__boggle_text.insert(tk.INSERT, word[-1])
 
-    def _add_to_lst(self, letter, button):
+    def set_button_command(self, cell, command):
+        btn = self.__btn_dct[cell]
+        self.__command_dct[btn] = command
+        btn.config(command=lambda : [self._add_to_lst(btn),command()])
+
+    def _add_to_lst(self, button):
         if button['bg'] == 'green':
             button.config(bg='white')
-            del self.__boggle_list[-1]
         else:
-            self.__boggle_list.append(letter)
             button.config(bg='green')
-        self.__boggle_text.delete("1.0", "end")
-        for ltr in self.__boggle_list:
-            self.__boggle_text.insert(tk.INSERT, ltr)
+
+    def set_cmd_for_submit(self, command):
+        self.__submit_btn.config(command=command)
+    def _clear_label(self):
+        self.__sub_label['text'] = ''
+
+    def submited(self, bool):
+        if bool:
+            self._clear()
+            self.__sub_label.config(fg='green')
+            self.__sub_label['text'] = 'correct word!'
+            self.__game.after(2000, self._clear_label)
+        else:
+            self._clear()
+            self.__sub_label.config(fg='red')
+            self.__sub_label['text'] = 'try another word'
+            self.__game.after(2000, self._clear_label)
+
+
+
 
     def _lost(self):
         self.__game.withdraw()
@@ -120,9 +162,9 @@ class BoggleGui:
         else:
             self._lost()
 
-    def start(self):
+    def run(self):
         self.__root.mainloop()
 
 
-b = BoggleGui(boggle_board_randomizer.randomize_board())
-b.start()
+# b = BoggleGui(boggle_board_randomizer.randomize_board())
+# b.start()
