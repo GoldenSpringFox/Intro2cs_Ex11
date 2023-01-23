@@ -107,6 +107,11 @@ class BoggleGui:
         for btn in self.__btn_dct.values():
             btn.config(bg='white')
 
+    def check_bg(self, cell):
+        btn = self.__btn_dct[cell]
+        if btn['bg'] == 'green':
+            return True
+        return False
     def set_display(self, word):
         if len(word) == 0:
             pass

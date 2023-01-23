@@ -28,8 +28,9 @@ class BoggleController:
         return submit
     def create_button_action(self, cell: Cell):
         def action():
-            self.__model.soft_path_update(cell)
-            self.__gui.set_display(self.__model.current_word)
+            if self.__gui.check_bg(cell):
+                self.__model.soft_path_update(cell)
+                self.__gui.set_display(self.__model.current_word)
         
         return action
 
