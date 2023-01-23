@@ -112,7 +112,6 @@ class BoggleGui:
 
     def _quit(self):
         self.__root.destroy()
-        print('Bloody loser')
 
     def _clock(self, time):
         self.__countdown.configure(text='time left: ' + str(time))
