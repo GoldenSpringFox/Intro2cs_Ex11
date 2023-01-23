@@ -3,7 +3,7 @@ import boggle_board_randomizer
 
 class BoggleGui:
 
-    def __init__(self):
+    def __init__(self, board):
         self.__root = tk.Tk()
         self.__root.title('Boggle')
         self._image1 = tk.PhotoImage(file='./images/Boogle.png')
@@ -26,10 +26,10 @@ class BoggleGui:
                                     anchor="nw")
         self.__canvas2.pack()
         self.__game.withdraw()
-        board = boggle_board_randomizer.randomize_board()
+        self.__board = board
         self.__btn_lst = []
 
-        for _ in board:
+        for _ in self.__board:
             for letter in _:
                 self.__btn_lst.append(tk.Button(self.__game, text=str(letter), bg='white', width=8, height=2))
         inx = self.__btn_lst[:]
@@ -124,5 +124,5 @@ class BoggleGui:
         self.__root.mainloop()
 
 
-b = BoggleGui()
+b = BoggleGui(boggle_board_randomizer.randomize_board())
 b.start()
