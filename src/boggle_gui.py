@@ -27,9 +27,7 @@ class BoggleGui:
         root.geometry("640x480")
         root.resizable(False, False)
         self._main_window = root
-
-        self._create_welcome_screen(root)
-
+        
         self._outer_frame = tk.Frame(self._main_window, bg=REGULAR_COLOR, highlightbackground=REGULAR_COLOR, highlightthickness=5)
         self._outer_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -48,14 +46,15 @@ class BoggleGui:
         self._submit_button = tk.Button(self._button_panel, text="Submit", font=('Courier', 20))
         self._submit_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        self._reset = tk.Button(self._button_panel, text="Reset", height=2)
-        self._reset.pack(side=tk.LEFT, fill=tk.Y)
+        self._reset_button = tk.Button(self._button_panel, text="Reset", height=2)
+        self._reset_button.pack(side=tk.LEFT, fill=tk.Y)
 
-        self._cells = dict()
+        self._cells: dict[Cell, tk.Button] = dict()
         self._initialize_board(board)
 
         self._sidebar = tk.Frame(self._outer_frame)
         self._sidebar.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self._sidebar.pack_propagate(False)
 
         self._score_label = tk.Label(self._sidebar, font=TEXT_FONT, bg=REGULAR_COLOR, relief=tk.RIDGE)
         self._score_label.pack(side=tk.TOP, fill=tk.X)
@@ -64,23 +63,6 @@ class BoggleGui:
         self._completed_words_label = tk.Label(self._sidebar, font=("Courier", 12), bg=REGULAR_COLOR, relief=tk.RIDGE, textvariable=self._completed_words)
         self._completed_words_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self._timer = tk.Label(self._sidebar, font=('Courier', 30), bg=REGULAR_COLOR, relief=tk.RIDGE)
-        self._timer.pack(side=tk.BOTTOM, fill=tk.X)
-
-        self._main_window.withdraw()
-
-    def _create_welcome_screen(self, root):
-        self._start_window = tk.Toplevel(root)
-        self._bg = tk.PhotoImage(file='./images/boggle_start.png')
-        self._canvas = tk.Canvas(self._start_window, width=640,
-                                  height=480)
-        self._canvas.create_image(0, 0, image=self._bg,
-                                   anchor="nw")
-        self._button = tk.Button(self._start_window, text='Start', font=('Courier', 20), command=self._initiate_game)
-        self._canvas.create_window(150, 350,
-                                    anchor="nw",
-                                    window=self._button)
-        self._canvas.pack()
 
     def _initialize_board(self, board: Board):
         for i, row in enumerate(board):
@@ -105,6 +87,17 @@ class BoggleGui:
         button.grid(row=coordinates[0], column=coordinates[1], sticky=tk.NSEW)
         self._cells[coordinates] = button
 
+    # button commands
+    def set_cell_command(self, cell_coordinates: Cell, command: Callable[[], None]):
+        self._cells[cell_coordinates].configure(command=command)
+
+    def set_submit_command(self, command: Callable[[], None]):
+        self._submit_button.configure(command=command)
+
+    def set_reset_command(self, command: Callable[[], None]):
+        self._reset_button.configure(command=command)
+
+    # setters / getters
     def _update_cell_active(self, cell: Cell, activate: bool):
         self._cells[cell]['background'] = BUTTON_ACTIVE_COLOR if activate else REGULAR_COLOR
 
@@ -118,24 +111,12 @@ class BoggleGui:
     def set_score(self, score: int):
         self._score_label["text"] = str(score)
 
-    def start_timer(self, time=180):
-        self._timer.configure(text=str(time))
-        if time >= 0:
-            self._main_window.after(1000, self.start_timer, time - 1)
-        else:
-            self.lost()
-
-    def _initiate_game(self):
-        self._start_window.withdraw()
-        self._main_window.deiconify()
-        self.start_timer(180)
-    def set_cell_command(self, cell_coordinates: Cell, command: Callable[[], None]):
-        self._cells[cell_coordinates].configure(command=command)
-
-    def lost(self):
-        self._main_window.destroy()
     def get_cell_coordinates(self) -> List[Cell]:
         return list(self._cells.keys())
+
+    def add_correct_word(self, word: str):
+        self._completed_words.set(self._completed_words.get() + f"\n{word}")
+
 
     def run(self):
         self._main_window.mainloop()

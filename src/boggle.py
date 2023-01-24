@@ -7,7 +7,7 @@ class BoggleController:
     def __init__(self) -> None:
         board = randomize_board()
         with open('boggle_dict.txt', 'r') as f:
-            words = f.readlines()
+            words = [line.rstrip() for line in f]
 
         self.__model = BoggleModel(board, words)
         self.__gui = BoggleGui(board)
@@ -16,7 +16,8 @@ class BoggleController:
             action = self.create_button_action(cell)
             self.__gui.set_cell_command(cell, action)
         
-        # self.__gui.set_cmd_for_submit(lambda: self.__model.submit)
+        self.__gui.set_submit_command(self.create_submit_action())
+        self.__gui.set_reset_command(self.create_reset_action())
 
         self.__gui.set_current_word(self.__model.current_word)
         self.__gui.set_score(self.__model.score)
@@ -27,8 +28,24 @@ class BoggleController:
             if successful:
                 self.__gui.set_path(self.__model.current_path)
                 self.__gui.set_current_word(self.__model.current_word)
-                self.__gui.set_score(self.__model.score)
-        
+        return action
+    
+    def create_reset_action(self):
+        def action():
+            self.__model.reset_path()
+            self.__gui.set_path(self.__model.current_path)
+            self.__gui.set_current_word(self.__model.current_word)
+        return action
+
+    def create_submit_action(self):
+        def action():
+            word = self.__model.current_word
+            successful = self.__model.submit()
+            if successful:
+                self.__gui.add_correct_word(word)
+            self.__gui.set_path(self.__model.current_path)
+            self.__gui.set_current_word(self.__model.current_word)
+            self.__gui.set_score(self.__model.score)
         return action
 
     def run(self):
