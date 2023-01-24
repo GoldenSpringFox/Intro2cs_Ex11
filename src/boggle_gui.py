@@ -80,10 +80,7 @@ class BoggleGui:
 
         self._create_welcome_screen(root)
 
-        self._create_end_screen(root)
-
         self._main_window.withdraw()
-        self._finish_screen.withdraw()
     
     def _create_welcome_screen(self, root):
         self._start_window = tk.Toplevel(root)
@@ -102,20 +99,32 @@ class BoggleGui:
                                    window=self._quit_button)
         self._canvas.pack()
 
-    def _create_end_screen(self, root):
+    def _show_end_screen(self, root):
         self._finish_screen = tk.Toplevel(root)
-        self._end_canvas = tk.Canvas(self._finish_screen, width=640,
-                                 height=480, bg='grey')
-        self._restart_btn = tk.Button(self._finish_screen, text='restart', font=('Courier', 20),
+        self._finish_screen.geometry("640x480")
+        self._finish_screen['bg'] = REGULAR_COLOR
+        self._final_score = tk.Label(self._finish_screen, text='your final score is: ' + str(self._score_label['text']),
+                                     font=('Courier', 20),
+                                     height=2, width=60,
+                                     bg='lightgrey')
+        self._final_score.pack(side=tk.TOP, fill=tk.BOTH)
+        self._show_completed_words = tk.Label(self._finish_screen, textvariable=self._completed_words,
+                                              font=('Courier', 15),
+                                              height=15, width=30,
+                                              bg='lightgrey')
+        self._show_completed_words.pack(side=tk.LEFT, fill=tk.BOTH)
+        self._btn_frame = tk.Frame(self._finish_screen, bg=REGULAR_COLOR, highlightbackground=REGULAR_COLOR, highlightthickness=5)
+        self._btn_frame.pack(fill=tk.BOTH)
+        self._restart_btn = tk.Button(self._btn_frame, text='restart', font=('Courier', 20),
                                                                 command=self._set_restart_button)
-        self._end_canvas.create_window(150, 350,
-                                   anchor="nw",
-                                   window=self._restart_btn)
-        self._quit_button = tk.Button(self._finish_screen, text='quit', font=('Courier', 20), command=self.quit)
-        self._end_canvas.create_window(400, 350,
-                                   anchor="nw",
-                                   window=self._quit_button)
-        self._end_canvas.pack()
+        self._restart_btn.pack(side=tk.TOP, fill=tk.BOTH)
+        self._quit_button = tk.Button(self._btn_frame, text='quit', font=('Courier', 20), command=self.quit)
+        self._quit_button.pack(side=tk.BOTTOM, fill=tk.BOTH)
+        self.fill = tk.Frame(self._finish_screen, bg=REGULAR_COLOR)
+        self.fill.pack()
+
+
+
 
     def _initialize_board(self, board: Board):
         for i, row in enumerate(board):
@@ -153,7 +162,10 @@ class BoggleGui:
     def _set_restart_button(self):
         self._finish_screen.withdraw()
         self._main_window.deiconify()
+        self._time_remaining = 180
         self.start_timer()
+        self._score_label['text'] = '0'
+        self._completed_words = tk.StringVar()
 
     def _set_start_button(self):
         self._start_window.withdraw()
@@ -186,7 +198,7 @@ class BoggleGui:
 
     def start_timer(self):
         if self._time_remaining == 0:
-            self.exit()
+            self._show_end_screen(self._main_window)
             return
         self._timer_label.configure(text=self.display_time())
         self._time_remaining -= 1
@@ -194,9 +206,6 @@ class BoggleGui:
 
     def quit(self):
         self._main_window.destroy()
-    def exit(self):
-        self._main_window.withdraw()
-        self._finish_screen.deiconify()
 
     def run(self):
         self._main_window.mainloop()
