@@ -45,9 +45,13 @@ class BoggleModel:
         return False
 
     def forced_path_update(self, cell: Cell):
-        if cell in self.__current_path[:-1]:
-            index = self.__current_path.index(cell)
-            self.__current_path = self.__current_path[:index]
+        if cell in self.__current_path:
+            if cell == self.__current_path[-1]:
+                self.__current_path.pop()
+            else:
+                index = self.__current_path.index(cell)
+                self.__current_path = self.__current_path[:index+1]
+            return True
         
         new_path = self.__current_path + [cell]
         if is_valid_path(self.__board, new_path, None):

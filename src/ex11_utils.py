@@ -47,10 +47,7 @@ def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
     if not paths:
         return []
     paths = _unique_path_per_word(board, paths)
-    max_score = max(map(lambda path: _path_score(path), paths))
-    return list(filter(lambda path: _path_score(path) == max_score, paths))
-    
-
+    return paths
 
 
 ########################################
