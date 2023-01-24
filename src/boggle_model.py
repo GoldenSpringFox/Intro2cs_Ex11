@@ -32,11 +32,11 @@ class BoggleModel:
         return word in self.__words and word not in self.__completed_words
 
     def is_current_path_valid_word(self):
-        word = is_valid_path(self.__board, self.__current_path)
+        word = is_valid_path(self.__board, self.__current_path, None)
         return self._is_valid_word(word)
 
     def submit(self) -> bool:
-        word = is_valid_path(self.__board, self.__current_path)
+        word = is_valid_path(self.__board, self.__current_path, None)
         self.reset_path()
         if self._is_valid_word(word):
             self.__completed_words.append(word)
