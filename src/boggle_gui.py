@@ -55,11 +55,14 @@ class BoggleGui:
         self._button_panel = tk.Frame(self._main_container)
         self._button_panel.pack(side=tk.BOTTOM, fill=tk.BOTH, padx=10, pady=(5,0))
 
-        self._submit_button = tk.Button(self._button_panel, text="Submit", font=('Courier', 20))
-        self._submit_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-
         self._reset_button = tk.Button(self._button_panel, text="Reset", height=2)
         self._reset_button.pack(side=tk.LEFT, fill=tk.Y)
+
+        self._submit_button = tk.Button(self._button_panel, text="Submit", font=('Courier', 20))
+        self._submit_button.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self._hint_button = tk.Button(self._button_panel, text="Hint", height=2)
+        self._hint_button.pack(side=tk.RIGHT, fill=tk.Y)
 
         self._cells: dict[Cell, tk.Button] = dict()
         self._initialize_board(board)
@@ -89,11 +92,11 @@ class BoggleGui:
                                   height=480)
         self._canvas.create_image(0, 0, image=self._bg,
                                    anchor="nw")
-        self._button = tk.Button(self._start_window, text='Sandbox', font=('Courier', 20), command=self._set_start_button)
+        self._button = tk.Button(self._start_window, text='Sandbox', font=('Courier', 20), command=self._start_sandbox_game)
         self._canvas.create_window(120, 350,
                                     anchor="nw",
                                     window=self._button)
-        self._timed_button = tk.Button(self._start_window, text='timed', font=('Courier', 20), command=self._set_timed_button)
+        self._timed_button = tk.Button(self._start_window, text='timed', font=('Courier', 20), command=self._start_timed_game)
         self._canvas.create_window(400, 350,
                                    anchor="nw",
                                    window=self._timed_button)
@@ -167,14 +170,17 @@ class BoggleGui:
         self._score_label['text'] = '0'
         self._completed_words = tk.StringVar()
 
-    def _set_start_button(self):
+    def _start_sandbox_game(self):
         self._start_window.withdraw()
         self._main_window.deiconify()
         self.start_timer()
 
-    def _set_timed_button(self):
+
+    def _start_timed_game(self):
         self._time_remaining = 180
-        self._set_start_button()
+        self._hint_button.pack_forget()
+        self._start_sandbox_game()
+
 
     # setters / getters
     def _update_cell_color(self, cell: Cell, activate: bool, is_path_valid_word: bool):
