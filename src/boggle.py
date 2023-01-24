@@ -15,15 +15,19 @@ class BoggleController:
         for cell in self.__gui.get_cell_coordinates():
             action = self.create_button_action(cell)
             self.__gui.set_cell_command(cell, action)
-        self.__gui.set_display(self.__model.current_word)
-        self.__gui.set_cmd_for_submit(lambda: self.__model.submit)
+        
+        # self.__gui.set_cmd_for_submit(lambda: self.__model.submit)
+
+        self.__gui.set_current_word(self.__model.current_word)
+        self.__gui.set_score(self.__model.score)
     
     def create_button_action(self, cell: Cell):
         def action():
-            successful = self.__model.soft_path_update(cell)
+            successful = self.__model.forced_path_update(cell)
             if successful:
-                self.__gui.set_display(self.__model.current_word)
-                # self.__gui.set_score(self.__model.score)
+                self.__gui.set_path(self.__model.current_path)
+                self.__gui.set_current_word(self.__model.current_word)
+                self.__gui.set_score(self.__model.score)
         
         return action
 

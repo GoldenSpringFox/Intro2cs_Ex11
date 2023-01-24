@@ -1,176 +1,106 @@
 import tkinter as tk
+from typing import List, Tuple, Callable
 
+Board = List[List[str]]
+Cell = Tuple[int, int]
+
+BUTTON_HOVER_COLOR = 'gray'
+REGULAR_COLOR = 'lightgray'
+BUTTON_ACTIVE_COLOR = 'slateblue'
+BUTTON_HIGHLIGHT_COLOR = 'orange'
+
+BUTTON_STYLE = {
+    "font": ("Courier", 30),
+    "borderwidth": 1,
+    "relief": tk.RAISED,
+    "bg": REGULAR_COLOR,
+    "activebackground": BUTTON_ACTIVE_COLOR
+}
 
 class BoggleGui:
 
-    def __init__(self, board):
-        self.__root = tk.Tk()
-        self.__root.title('Boggle')
-        self._image1 = tk.PhotoImage(file='./images/Boogle.png')
-        self.__canvas = tk.Canvas(self.__root, width=400,
-                                  height=400)
-        self.__canvas.create_image(0, 0, image=self._image1,
-                                   anchor="nw")
-        self.__button = tk.Button(self.__root, text='Start', font=('Comic Sans MS', 20), command=self._start_game)
-        button_canvas = self.__canvas.create_window(150, 300,
-                                                    anchor="nw",
-                                                    window=self.__button)
-        self.__canvas.pack()
+    def __init__(self, board: Board):
+        root = tk.Tk()
+        root.title('Boggle')
+        root.geometry("640x480")
+        root.resizable(False, False)
+        self._main_window = root
+        
+        self._outer_frame = tk.Frame(self._main_window, bg=REGULAR_COLOR, highlightbackground=REGULAR_COLOR, highlightthickness=5)
+        self._outer_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.__game = tk.Toplevel()
-        self.__game.title("Boggle")
-        self.__image2 = tk.PhotoImage(file='./images/board3.png')
-        self.__canvas2 = tk.Canvas(self.__game, width=400,
-                                   height=400)
-        self.__canvas2.create_image(0, 0, image=self.__image2,
-                                    anchor="nw")
-        self.__canvas2.pack()
-        self.__game.withdraw()
-        self.__board = board
-        self.__btn_dct = {}
-        row = 0
-        for _ in self.__board:
-            col = 0
-            for letter in _:
-                self.__btn_dct[(row,col)] = tk.Button(self.__game, text=str(letter), bg='white', width=8, height=2)
-                col += 1
-            row += 1
-        lst = []
-        for i in self.__btn_dct.values():
-            lst.append(i)
-        inx = lst[:]
-        for j in range(0, 280, 70):
-            for i in range(0, 240, 60):
-                buttons_canvas = self.__canvas2.create_window(40 + j, 160 + i,
-                                                              anchor="nw",
-                                                              window=inx[0])
-                del inx[0]
-        self.__command_dct = {}
+        self._current_word_label = tk.Label(self._outer_frame, font=("Courier", 30), bg=REGULAR_COLOR, height=2, relief=tk.RIDGE)
+        self._current_word_label.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self.__boggle_text = tk.Text(self.__game, height=1, width=30)
-        self.__canvas2.create_window(50, 40,
-                                     anchor="nw",
-                                     window=self.__boggle_text)
+        self._board = tk.Frame(self._outer_frame)
+        self._board.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.__clear_button = tk.Button(self.__game, text='clear answer', width=10, height=2, bg='grey', fg='red',
-                                        command=self._clear)
-        self.__canvas2.create_window(300, 40,
-                                     anchor="nw",
-                                     window=self.__clear_button)
-        self.__submit_btn = tk.Button(self.__game, text='submit answer', width=10, height=2, bg='grey', fg='red')
-        self.__canvas2.create_window(300, 90,
-                                     anchor="nw",
-                                     window=self.__submit_btn)
-        self.__sub_label = tk.Label(self.__game, text='', height=1, width=20)
-        self.__canvas2.create_window(50, 70,
-                                     anchor="nw",
-                                     window=self.__sub_label)
+        self._cells = dict()
+        self._initialize_board(board)
 
-        self.__countdown = tk.Label(self.__game, font='Arial', text='')
-        self.__countdown.pack()
-        self.__lose_screen = tk.Toplevel()
-        self.__lose_screen.title('Boggle')
-        self.__image_lose = tk.PhotoImage(file='./images/lose.png')
-        self.__canvas3 = tk.Canvas(self.__lose_screen, width=360,
-                                   height=360)
-        self.__canvas3.create_image(0, 0, image=self.__image_lose,
-                                    anchor="nw")
-        self.__canvas3.pack()
-        self.__lose_screen.withdraw()
-        self.__restart_button = tk.Button(self.__lose_screen, text='Restart?', command=self._restart_game, width=12,
-                                          height=3)
-        buttons_restart = self.__canvas3.create_window(80, 300,
-                                                       anchor="nw",
-                                                       window=self.__restart_button)
-        self.__quit_button = tk.Button(self.__lose_screen, text='Quit?', command=self._quit, width=12, height=3)
-        buttons_quit = self.__canvas3.create_window(220, 300,
-                                                    anchor="nw",
-                                                    window=self.__quit_button)
+        self._sidebar = tk.Frame(self._outer_frame)
+        self._sidebar.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-    def _start_game(self):
-        self.__root.withdraw()
-        self._openNewWindow()
-        self._clock(180)
+        self._score_label = tk.Label(self._sidebar, font=("Courier", 30), bg=REGULAR_COLOR, relief=tk.RIDGE)
+        self._score_label.pack(side=tk.TOP, fill=tk.X)
 
-    def _openNewWindow(self):
-        self.__game.deiconify()
+        self._completed_words = tk.StringVar()
+        self._completed_words_label = tk.Label(self._sidebar, font=("Courier", 12), bg=REGULAR_COLOR, relief=tk.RIDGE, textvariable=self._completed_words)
+        self._completed_words_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
-    def get_cell_coordinates(self):
-        lst = []
-        for i in self.__btn_dct:
-            lst.append(i)
-        return lst
+    def _initialize_board(self, board: Board):
+        for i, row in enumerate(board):
+            for j, cell_text in enumerate(row):
+                self._board.grid_rowconfigure(i, weight=1)
+                self._board.grid_columnconfigure(j, weight=1)
+                self._make_cell((i,j), cell_text)
+    
+    def _make_cell(self, coordinates: Cell, text: str):
+        button = tk.Button(self._board, text=text, **BUTTON_STYLE)
 
-    def _clear(self):
-        self.__boggle_text.delete("1.0", "end")
-        for btn in self.__btn_dct.values():
-            btn.config(bg='white')
+        def _on_enter(event):
+            if button['background'] != BUTTON_ACTIVE_COLOR:
+                button['background'] = BUTTON_HOVER_COLOR
+        button.bind("<Enter>", _on_enter)
 
-    def check_bg(self, cell):
-        btn = self.__btn_dct[cell]
-        if btn['bg'] == 'green':
-            return True
-        return False
-    def set_display(self, word):
-        if len(word) == 0:
-            pass
-        else:
-            self.__boggle_text.insert(tk.INSERT, word[-1])
+        def _on_leave(event):
+            if button['background'] != BUTTON_ACTIVE_COLOR:
+                button['background'] = REGULAR_COLOR
+        button.bind("<Leave>", _on_leave)
+        
+        button.grid(row=coordinates[0], column=coordinates[1], sticky=tk.NSEW)
+        self._cells[coordinates] = button
 
-    def set_cell_command(self, cell, command):
-        btn = self.__btn_dct[cell]
-        self.__command_dct[btn] = command
-        btn.config(command=lambda : [self._add_to_lst(btn),command()])
+    def _update_cell_active(self, cell: Cell, activate: bool):
+        self._cells[cell]['background'] = BUTTON_ACTIVE_COLOR if activate else REGULAR_COLOR
 
-    def _add_to_lst(self, button):
-        if button['bg'] == 'green':
-            button.config(bg='white')
-        else:
-            button.config(bg='green')
+    def set_path(self, path: List[Cell]):
+        for cell in self._cells:
+            self._update_cell_active(cell, cell in path)
 
-    def set_cmd_for_submit(self, command):
-        self.__submit_btn.config(command=command)
-    def _clear_label(self):
-        self.__sub_label['text'] = ''
+    def set_current_word(self, word: str):
+        self._current_word_label["text"] = word
+    
+    def set_score(self, score: int):
+        self._score_label["text"] = str(score)
 
-    def submited(self, bool):
-        if bool:
-            self._clear()
-            self.__sub_label.config(fg='green')
-            self.__sub_label['text'] = 'correct word!'
-            self.__game.after(2000, self._clear_label)
-        else:
-            self._clear()
-            self.__sub_label.config(fg='red')
-            self.__sub_label['text'] = 'try another word'
-            self.__game.after(2000, self._clear_label)
+    def set_cell_command(self, cell_coordinates: Cell, command: Callable[[], None]):
+        self._cells[cell_coordinates].configure(command=command)
 
-
-
-
-    def _lost(self):
-        self.__game.withdraw()
-        self.__lose_screen.deiconify()
-
-    def _restart_game(self):
-        self.__root.deiconify()
-        self._start_game()
-
-    def _quit(self):
-        self.__root.destroy()
-
-    def _clock(self, time):
-        self.__countdown.configure(text='time left: ' + str(time))
-        if time >= 0:
-            self.__game.after(1000, self._clock, time - 1)
-        else:
-            self._lost()
+    def get_cell_coordinates(self) -> List[Cell]:
+        return list(self._cells.keys())
 
     def run(self):
-        self.__root.mainloop()
+        self._main_window.mainloop()
 
 
 if __name__ == "__main__":
-    b = BoggleGui()
+    board = [
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'c', 'd']
+    ]
+    b = BoggleGui(board)
     b.run()
