@@ -27,7 +27,9 @@ class BoggleGui:
         root.geometry("640x480")
         root.resizable(False, False)
         self._main_window = root
-        
+
+        self._create_welcome_screen(root)
+
         self._outer_frame = tk.Frame(self._main_window, bg=REGULAR_COLOR, highlightbackground=REGULAR_COLOR, highlightthickness=5)
         self._outer_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -65,6 +67,20 @@ class BoggleGui:
         self._timer = tk.Label(self._sidebar, font=('Courier', 30), bg=REGULAR_COLOR, relief=tk.RIDGE)
         self._timer.pack(side=tk.BOTTOM, fill=tk.X)
 
+        self._main_window.withdraw()
+
+    def _create_welcome_screen(self, root):
+        self._start_window = tk.Toplevel(root)
+        self._bg = tk.PhotoImage(file='./images/boggle_start.png')
+        self._canvas = tk.Canvas(self._start_window, width=640,
+                                  height=480)
+        self._canvas.create_image(0, 0, image=self._bg,
+                                   anchor="nw")
+        self._button = tk.Button(self._start_window, text='Start', font=('Courier', 20), command=self._initiate_game)
+        self._canvas.create_window(150, 350,
+                                    anchor="nw",
+                                    window=self._button)
+        self._canvas.pack()
 
     def _initialize_board(self, board: Board):
         for i, row in enumerate(board):
@@ -103,11 +119,21 @@ class BoggleGui:
         self._score_label["text"] = str(score)
 
     def start_timer(self, time=180):
-        self._timer['text'] = time
-        self._main_window.after(1000, self.start_timer(time-1))
+        self._timer.configure(text=str(time))
+        if time >= 0:
+            self._main_window.after(1000, self.start_timer, time - 1)
+        else:
+            self.lost()
+
+    def _initiate_game(self):
+        self._start_window.withdraw()
+        self._main_window.deiconify()
+        self.start_timer(180)
     def set_cell_command(self, cell_coordinates: Cell, command: Callable[[], None]):
         self._cells[cell_coordinates].configure(command=command)
 
+    def lost(self):
+        self._main_window.destroy()
     def get_cell_coordinates(self) -> List[Cell]:
         return list(self._cells.keys())
 
