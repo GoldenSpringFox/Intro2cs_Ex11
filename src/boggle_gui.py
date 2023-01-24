@@ -124,5 +124,6 @@ class BoggleGui:
         self.__root.mainloop()
 
 
-b = BoggleGui()
-b.start()
+if __name__ == "__main__":
+    b = BoggleGui()
+    b.start()
