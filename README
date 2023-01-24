@@ -1,1 +1,10 @@
-<Describe your project's features here>
+Features:
+- basic boggle game with standard rules
+- timer
+- scoring system
+- list of completed words
+
+Special Features:
+- mark path when word is valid
+- untimed sandbox mode
+- hint button

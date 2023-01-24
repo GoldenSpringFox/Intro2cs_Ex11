@@ -25,6 +25,10 @@ class BoggleModel:
     def current_word(self):
         return reduce(lambda word,cell: word + self.__board[cell[0]][cell[1]], self.current_path, "")
 
+    @property
+    def all_possible_paths(self):
+        return max_score_paths(self.__board, (word for word in self.__words if word not in self.__completed_words))
+
     def reset_path(self):
         self.__current_path = []
 
@@ -34,6 +38,9 @@ class BoggleModel:
     def is_current_path_valid_word(self):
         word = is_valid_path(self.__board, self.__current_path, None)
         return self._is_valid_word(word)
+    
+    def get_word_from_path(self, path: Path):
+        return get_word_from_path(self.__board, path)
 
     def submit(self) -> bool:
         word = is_valid_path(self.__board, self.__current_path, None)

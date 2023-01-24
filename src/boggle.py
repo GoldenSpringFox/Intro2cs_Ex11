@@ -2,6 +2,7 @@ from boggle_gui import BoggleGui
 from boggle_model import BoggleModel
 from boggle_board_randomizer import randomize_board
 from ex11_utils import Cell
+import random
 
 class BoggleController:
     def __init__(self) -> None:
@@ -18,6 +19,7 @@ class BoggleController:
         
         self.__gui.set_submit_command(self.create_submit_action())
         self.__gui.set_reset_command(self.create_reset_action())
+        self.__gui.set_hint_command(self.create_hint_action())
 
         self.__gui.set_current_word(self.__model.current_word)
         self.__gui.set_score(self.__model.score)
@@ -46,6 +48,15 @@ class BoggleController:
             self.__gui.set_path(self.__model.current_path)
             self.__gui.set_current_word(self.__model.current_word)
             self.__gui.set_score(self.__model.score)
+        return action
+    
+    def create_hint_action(self):
+        def action():
+            possible_paths = self.__model.all_possible_paths
+            if not possible_paths:
+                self.__gui.set_current_word("Found all words!")
+                return
+            self.__gui.set_current_word(self.__model.get_word_from_path(random.choice(possible_paths)))
         return action
 
     def run(self):

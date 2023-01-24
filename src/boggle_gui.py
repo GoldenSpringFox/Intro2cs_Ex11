@@ -162,6 +162,9 @@ class BoggleGui:
     def set_reset_command(self, command: Callable[[], None]):
         self._reset_button.configure(command=command)
 
+    def set_hint_command(self, command: Callable[[], None]):
+        self._hint_button.configure(command=command)
+
     def _set_restart_button(self):
         self._finish_screen.withdraw()
         self._main_window.deiconify()

@@ -27,9 +27,12 @@ def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[st
             _is_cell_repeating(*path[i:]):
             return
         word += board[current_cell[0]][current_cell[1]]
-    
-
+        
     return word if words is None or word in words else None
+
+
+def get_word_from_path(board: Board, path: Path):
+    return is_valid_path(board, path, None)
 
 
 def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
@@ -87,7 +90,7 @@ def _find_paths_for_words(board: Board, words: Iterable[str], max_path_length: i
         paths_found = []
     
     # Break conditions
-    word = _get_word_from_path(board, current_path)
+    word = get_word_from_path(board, current_path)
     if not word:
         return paths_found
     
@@ -122,13 +125,10 @@ def _get_surrounding_cells(cell: Cell) -> List[Cell]:
 def _path_score(path: Path):
     return len(path) ** 2
 
-def _get_word_from_path(board: Board, path: Path):
-    return is_valid_path(board, path, None)
-
 def _unique_path_per_word(board: Board, paths: List[Path]) -> List[Path]:
     word_path_dict = {}
     for path in paths:
-        word = _get_word_from_path(board, path)
+        word = get_word_from_path(board, path)
         if word not in word_path_dict:
             word_path_dict[word] = path
     return list(word_path_dict.values())
