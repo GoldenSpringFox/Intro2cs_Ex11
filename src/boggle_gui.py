@@ -9,8 +9,10 @@ REGULAR_COLOR = 'lightgray'
 BUTTON_ACTIVE_COLOR = 'slateblue'
 BUTTON_HIGHLIGHT_COLOR = 'orange'
 
+TEXT_FONT = ("Courier", 30)
+
 BUTTON_STYLE = {
-    "font": ("Courier", 30),
+    "font": TEXT_FONT,
     "borderwidth": 1,
     "relief": tk.RAISED,
     "bg": REGULAR_COLOR,
@@ -29,11 +31,23 @@ class BoggleGui:
         self._outer_frame = tk.Frame(self._main_window, bg=REGULAR_COLOR, highlightbackground=REGULAR_COLOR, highlightthickness=5)
         self._outer_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self._current_word_label = tk.Label(self._outer_frame, font=("Courier", 30), bg=REGULAR_COLOR, height=2, relief=tk.RIDGE)
+        self._current_word_label = tk.Label(self._outer_frame, font=TEXT_FONT, bg=REGULAR_COLOR, height=2, relief=tk.RIDGE)
         self._current_word_label.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self._board = tk.Frame(self._outer_frame)
-        self._board.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self._main_container = tk.Frame(self._outer_frame)
+        self._main_container.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self._board = tk.Frame(self._main_container)
+        self._board.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        self._button_panel = tk.Frame(self._main_container)
+        self._button_panel.pack(side=tk.BOTTOM, fill=tk.BOTH)
+
+        self._submit_button = tk.Button(self._button_panel, text="Submit", font=('Courier', 20))
+        self._submit_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        self._reset = tk.Button(self._button_panel, text="Reset", height=2)
+        self._reset.pack(side=tk.LEFT, fill=tk.Y)
 
         self._cells = dict()
         self._initialize_board(board)
@@ -41,7 +55,7 @@ class BoggleGui:
         self._sidebar = tk.Frame(self._outer_frame)
         self._sidebar.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        self._score_label = tk.Label(self._sidebar, font=("Courier", 30), bg=REGULAR_COLOR, relief=tk.RIDGE)
+        self._score_label = tk.Label(self._sidebar, font=TEXT_FONT, bg=REGULAR_COLOR, relief=tk.RIDGE)
         self._score_label.pack(side=tk.TOP, fill=tk.X)
 
         self._completed_words = tk.StringVar()
