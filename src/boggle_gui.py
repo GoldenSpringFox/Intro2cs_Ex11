@@ -62,6 +62,26 @@ class BoggleGui:
         self._completed_words = tk.StringVar()
         self._completed_words_label = tk.Label(self._sidebar, font=("Courier", 12), bg=REGULAR_COLOR, relief=tk.RIDGE, textvariable=self._completed_words)
         self._completed_words_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        
+        self._timer = tk.Label(self._sidebar, font=('Courier', 30), bg=REGULAR_COLOR, relief=tk.RIDGE)
+        self._timer.pack(side=tk.BOTTOM, fill=tk.X)
+
+        self._create_welcome_screen(root)
+
+        self._main_window.withdraw()
+    
+    def _create_welcome_screen(self, root):
+        self._start_window = tk.Toplevel(root)
+        self._bg = tk.PhotoImage(file='./images/boggle_start.png')
+        self._canvas = tk.Canvas(self._start_window, width=640,
+                                  height=480)
+        self._canvas.create_image(0, 0, image=self._bg,
+                                   anchor="nw")
+        self._button = tk.Button(self._start_window, text='Start', font=('Courier', 20), command=self._set_start_button)
+        self._canvas.create_window(150, 350,
+                                    anchor="nw",
+                                    window=self._button)
+        self._canvas.pack()
 
 
     def _initialize_board(self, board: Board):
@@ -96,6 +116,11 @@ class BoggleGui:
 
     def set_reset_command(self, command: Callable[[], None]):
         self._reset_button.configure(command=command)
+    
+    def _set_start_button(self):
+        self._start_window.withdraw()
+        self._main_window.deiconify()
+        self.start_timer(180)
 
     # setters / getters
     def _update_cell_active(self, cell: Cell, activate: bool):
@@ -117,6 +142,16 @@ class BoggleGui:
     def add_correct_word(self, word: str):
         self._completed_words.set(self._completed_words.get() + f"\n{word}")
 
+    # timer
+    def start_timer(self, time=180):
+        self._timer.configure(text=str(time))
+        if time < 0:
+            self.exit()
+            return
+        self._main_window.after(1000, self.start_timer, time - 1)
+
+    def exit(self):
+        self._main_window.destroy()
 
     def run(self):
         self._main_window.mainloop()
