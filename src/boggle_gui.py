@@ -29,10 +29,11 @@ FRAME_STYLE = {
     "relief":tk.FLAT
 }
 
-
 class BoggleGui:
 
-    def __init__(self, board: Board):
+    def __init__(self, board: Board, time: int = -1):
+        self._time_remaining = time
+
         root = tk.Tk()
         root.title('Boggle')
         root.geometry("720x540")
@@ -74,12 +75,12 @@ class BoggleGui:
         self._completed_words_label = tk.Label(self._sidebar, FRAME_STYLE, textvariable=self._completed_words)
         self._completed_words_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        self._timer = tk.Label(self._sidebar, font=('Courier', 20), bg=REGULAR_COLOR, relief=tk.RIDGE)
-        self._timer.pack(side=tk.BOTTOM, fill=tk.X)
+        self._timer_label = tk.Label(self._sidebar, font=('Courier', 20), bg=REGULAR_COLOR, relief=tk.RIDGE)
+        self._timer_label.pack(side=tk.BOTTOM, fill=tk.X)
 
         self._create_welcome_screen(root)
 
-        self._create_finished_game_screen(root)
+        self._create_end_screen(root)
 
         self._main_window.withdraw()
         self._finish_screen.withdraw()
@@ -101,7 +102,7 @@ class BoggleGui:
                                    window=self._quit_button)
         self._canvas.pack()
 
-    def _create_finished_game_screen(self, root):
+    def _create_end_screen(self, root):
         self._finish_screen = tk.Toplevel(root)
         self._end_canvas = tk.Canvas(self._finish_screen, width=640,
                                  height=480, bg='grey')
@@ -116,8 +117,6 @@ class BoggleGui:
                                    window=self._quit_button)
         self._end_canvas.pack()
 
-
-
     def _initialize_board(self, board: Board):
         for i, row in enumerate(board):
             for j, cell_text in enumerate(row):
@@ -129,12 +128,12 @@ class BoggleGui:
         button = tk.Button(self._board, text=text, **BUTTON_STYLE)
 
         def _on_enter(event):
-            if button['background'] != BUTTON_ACTIVE_COLOR:
+            if button['background'] not in [BUTTON_ACTIVE_COLOR, BUTTON_HIGHLIGHT_COLOR]:
                 button['background'] = BUTTON_HOVER_COLOR
         button.bind("<Enter>", _on_enter)
 
         def _on_leave(event):
-            if button['background'] != BUTTON_ACTIVE_COLOR:
+            if button['background'] not in [BUTTON_ACTIVE_COLOR, BUTTON_HIGHLIGHT_COLOR]:
                 button['background'] = REGULAR_COLOR
         button.bind("<Leave>", _on_leave)
         
@@ -154,20 +153,20 @@ class BoggleGui:
     def _set_restart_button(self):
         self._finish_screen.withdraw()
         self._main_window.deiconify()
-        self.start_timer(180)
+        self.start_timer()
 
     def _set_start_button(self):
         self._start_window.withdraw()
         self._main_window.deiconify()
-        self.start_timer(5)
+        self.start_timer()
 
     # setters / getters
-    def _update_cell_active(self, cell: Cell, activate: bool):
-        self._cells[cell]['background'] = BUTTON_ACTIVE_COLOR if activate else REGULAR_COLOR
+    def _update_cell_color(self, cell: Cell, activate: bool, is_path_valid_word: bool):
+        self._cells[cell]['background'] = REGULAR_COLOR if not activate else BUTTON_HIGHLIGHT_COLOR if is_path_valid_word else BUTTON_ACTIVE_COLOR
 
-    def set_path(self, path: List[Cell]):
+    def set_path(self, path: List[Cell], is_path_valid_word = False):
         for cell in self._cells:
-            self._update_cell_active(cell, cell in path)
+            self._update_cell_color(cell, cell in path, is_path_valid_word)
 
     def set_current_word(self, word: str):
         self._current_word_label["text"] = word
@@ -182,13 +181,16 @@ class BoggleGui:
         self._completed_words.set(self._completed_words.get() + f"\n{word}")
 
     # timer
-    def start_timer(self, time=180):
-        if time < 0:
+    def display_time(self):
+        return "Unlimited" if self._time_remaining < 0 else f"{self._time_remaining // SECONDS_IN_MINUTE}:{str(self._time_remaining % SECONDS_IN_MINUTE).zfill(2)}"
+
+    def start_timer(self):
+        if self._time_remaining == 0:
             self.exit()
             return
-        display_time = f"{time // SECONDS_IN_MINUTE}:{str(time % SECONDS_IN_MINUTE).zfill(2)}"
-        self._timer.configure(text=display_time)
-        self._main_window.after(1000, self.start_timer, time - 1)
+        self._timer_label.configure(text=self.display_time())
+        self._time_remaining -= 1
+        self._main_window.after(1000, self.start_timer)
 
     def quit(self):
         self._main_window.destroy()

@@ -26,7 +26,7 @@ class BoggleController:
         def action():
             successful = self.__model.forced_path_update(cell)
             if successful:
-                self.__gui.set_path(self.__model.current_path)
+                self.__gui.set_path(self.__model.current_path, self.__model.is_current_path_valid_word())
                 self.__gui.set_current_word(self.__model.current_word)
         return action
     
