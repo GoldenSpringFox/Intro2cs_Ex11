@@ -68,7 +68,10 @@ class BoggleGui:
 
         self._create_welcome_screen(root)
 
+        self._create_finished_game_screen(root)
+
         self._main_window.withdraw()
+        self._finish_screen.withdraw()
     
     def _create_welcome_screen(self, root):
         self._start_window = tk.Toplevel(root)
@@ -81,7 +84,27 @@ class BoggleGui:
         self._canvas.create_window(150, 350,
                                     anchor="nw",
                                     window=self._button)
+        self._quit_button = tk.Button(self._start_window, text='quit', font=('Courier', 20), command=self.quit)
+        self._canvas.create_window(400, 350,
+                                   anchor="nw",
+                                   window=self._quit_button)
         self._canvas.pack()
+
+    def _create_finished_game_screen(self, root):
+        self._finish_screen = tk.Toplevel(root)
+        self._end_canvas = tk.Canvas(self._finish_screen, width=640,
+                                 height=480, bg='grey')
+        self._restart_btn = tk.Button(self._finish_screen, text='restart', font=('Courier', 20),
+                                                                command=self._set_restart_button)
+        self._end_canvas.create_window(150, 350,
+                                   anchor="nw",
+                                   window=self._restart_btn)
+        self._quit_button = tk.Button(self._finish_screen, text='quit', font=('Courier', 20), command=self.quit)
+        self._end_canvas.create_window(400, 350,
+                                   anchor="nw",
+                                   window=self._quit_button)
+        self._end_canvas.pack()
+
 
 
     def _initialize_board(self, board: Board):
@@ -116,11 +139,16 @@ class BoggleGui:
 
     def set_reset_command(self, command: Callable[[], None]):
         self._reset_button.configure(command=command)
-    
+
+    def _set_restart_button(self):
+        self._finish_screen.withdraw()
+        self._main_window.deiconify()
+        self.start_timer(180)
+
     def _set_start_button(self):
         self._start_window.withdraw()
         self._main_window.deiconify()
-        self.start_timer(180)
+        self.start_timer(5)
 
     # setters / getters
     def _update_cell_active(self, cell: Cell, activate: bool):
@@ -150,8 +178,11 @@ class BoggleGui:
             return
         self._main_window.after(1000, self.start_timer, time - 1)
 
-    def exit(self):
+    def quit(self):
         self._main_window.destroy()
+    def exit(self):
+        self._main_window.withdraw()
+        self._finish_screen.deiconify()
 
     def run(self):
         self._main_window.mainloop()
