@@ -48,6 +48,9 @@ class BoggleGui:
         self._completed_words_label = tk.Label(self._sidebar, font=("Courier", 12), bg=REGULAR_COLOR, relief=tk.RIDGE, textvariable=self._completed_words)
         self._completed_words_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+        self._timer = tk.Label(self._sidebar, font=('Courier', 30), bg=REGULAR_COLOR, relief=tk.RIDGE)
+        self._timer.pack(side=tk.BOTTOM, fill=tk.X)
+
 
     def _initialize_board(self, board: Board):
         for i, row in enumerate(board):
@@ -85,6 +88,9 @@ class BoggleGui:
     def set_score(self, score: int):
         self._score_label["text"] = str(score)
 
+    def start_timer(self, time=180):
+        self._timer['text'] = time
+        self._main_window.after(1000, self.start_timer(time-1))
     def set_cell_command(self, cell_coordinates: Cell, command: Callable[[], None]):
         self._cells[cell_coordinates].configure(command=command)
 
