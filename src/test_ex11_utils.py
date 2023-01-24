@@ -191,6 +191,17 @@ def test_max_score_paths():
     assert max_score_paths(board, ['abc']) == [[(0,0), (0,1), (0,2)]]
     assert max_score_paths(board, ['cab']) in [[[(0,2), (1,1)]], [[(0,1), (1,2)]]]
 
+    board = [
+        ['a', 'b', 'c', 'd'],
+        ['e', 'f', 'g', 'h'],
+        ['i', 'j', 'k', 'l'],
+        ['m', 'n', 'o', 'p']
+    ]
+    assert max_score_paths(board, ['abc', 'cde', 'abcd']) == [
+        [(0,0), (0,1), (0,2)],
+        [(0,0), (0,1), (0,2), (0,3)]
+    ]
+
 def test__unique_path_per_word():
     board = [
         ['a', 'b', 'c', 'd'],
