@@ -4,13 +4,14 @@ from typing import List, Tuple, Callable
 Board = List[List[str]]
 Cell = Tuple[int, int]
 
+SECONDS_IN_MINUTE = 60
+
+BACKGROUND = '#2A2D2D'
 BUTTON_HOVER_COLOR = 'gray'
 REGULAR_COLOR = 'lightgray'
-BUTTON_ACTIVE_COLOR = 'slateblue'
+BUTTON_ACTIVE_COLOR = '#577D7D'
 BUTTON_HIGHLIGHT_COLOR = 'orange'
-
 TEXT_FONT = ("Courier", 30)
-
 BUTTON_STYLE = {
     "font": TEXT_FONT,
     "borderwidth": 1,
@@ -18,30 +19,40 @@ BUTTON_STYLE = {
     "bg": REGULAR_COLOR,
     "activebackground": BUTTON_ACTIVE_COLOR
 }
+FRAME_STYLE = {
+    "font": ("Courier", 12), 
+    "background": BACKGROUND,
+    "foreground": 'white',
+    "highlightbackground": REGULAR_COLOR, 
+    "highlightcolor": REGULAR_COLOR,
+    "highlightthickness": 5,
+    "relief":tk.FLAT
+}
+
 
 class BoggleGui:
 
     def __init__(self, board: Board):
         root = tk.Tk()
         root.title('Boggle')
-        root.geometry("640x480")
+        root.geometry("720x540")
         root.resizable(False, False)
         self._main_window = root
         
-        self._outer_frame = tk.Frame(self._main_window, bg=REGULAR_COLOR, highlightbackground=REGULAR_COLOR, highlightthickness=5)
+        self._outer_frame = tk.Frame(self._main_window, bg=BACKGROUND, padx=10, pady=10)
         self._outer_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         self._current_word_label = tk.Label(self._outer_frame, font=TEXT_FONT, bg=REGULAR_COLOR, height=2, relief=tk.RIDGE)
-        self._current_word_label.pack(side=tk.TOP, fill=tk.BOTH)
+        self._current_word_label.pack(side=tk.TOP, fill=tk.BOTH, padx=(10,0))
 
-        self._main_container = tk.Frame(self._outer_frame)
+        self._main_container = tk.Frame(self._outer_frame, background=BACKGROUND)
         self._main_container.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self._board = tk.Frame(self._main_container)
-        self._board.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self._board = tk.Frame(self._main_container, background=BACKGROUND)
+        self._board.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         self._button_panel = tk.Frame(self._main_container)
-        self._button_panel.pack(side=tk.BOTTOM, fill=tk.BOTH)
+        self._button_panel.pack(side=tk.BOTTOM, fill=tk.BOTH, padx=10, pady=(5,0))
 
         self._submit_button = tk.Button(self._button_panel, text="Submit", font=('Courier', 20))
         self._submit_button.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
@@ -60,10 +71,10 @@ class BoggleGui:
         self._score_label.pack(side=tk.TOP, fill=tk.X)
 
         self._completed_words = tk.StringVar()
-        self._completed_words_label = tk.Label(self._sidebar, font=("Courier", 12), bg=REGULAR_COLOR, relief=tk.RIDGE, textvariable=self._completed_words)
+        self._completed_words_label = tk.Label(self._sidebar, FRAME_STYLE, textvariable=self._completed_words)
         self._completed_words_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        self._timer = tk.Label(self._sidebar, font=('Courier', 30), bg=REGULAR_COLOR, relief=tk.RIDGE)
+        self._timer = tk.Label(self._sidebar, font=('Courier', 20), bg=REGULAR_COLOR, relief=tk.RIDGE)
         self._timer.pack(side=tk.BOTTOM, fill=tk.X)
 
         self._create_welcome_screen(root)
@@ -78,7 +89,7 @@ class BoggleGui:
         self._canvas.create_image(0, 0, image=self._bg,
                                    anchor="nw")
         self._button = tk.Button(self._start_window, text='Start', font=('Courier', 20), command=self._set_start_button)
-        self._canvas.create_window(150, 350,
+        self._canvas.create_window(240, 320,
                                     anchor="nw",
                                     window=self._button)
         self._canvas.pack()
@@ -144,10 +155,11 @@ class BoggleGui:
 
     # timer
     def start_timer(self, time=180):
-        self._timer.configure(text=str(time))
         if time < 0:
             self.exit()
             return
+        display_time = f"{time // SECONDS_IN_MINUTE}:{str(time % SECONDS_IN_MINUTE).zfill(2)}"
+        self._timer.configure(text=display_time)
         self._main_window.after(1000, self.start_timer, time - 1)
 
     def exit(self):
