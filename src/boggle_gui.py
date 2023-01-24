@@ -89,14 +89,14 @@ class BoggleGui:
                                   height=480)
         self._canvas.create_image(0, 0, image=self._bg,
                                    anchor="nw")
-        self._button = tk.Button(self._start_window, text='Start', font=('Courier', 20), command=self._set_start_button)
-        self._canvas.create_window(240, 320,
+        self._button = tk.Button(self._start_window, text='Sandbox', font=('Courier', 20), command=self._set_start_button)
+        self._canvas.create_window(120, 350,
                                     anchor="nw",
                                     window=self._button)
-        self._quit_button = tk.Button(self._start_window, text='quit', font=('Courier', 20), command=self.quit)
+        self._timed_button = tk.Button(self._start_window, text='timed', font=('Courier', 20), command=self._set_timed_button)
         self._canvas.create_window(400, 350,
                                    anchor="nw",
-                                   window=self._quit_button)
+                                   window=self._timed_button)
         self._canvas.pack()
 
     def _show_end_screen(self, root):
@@ -171,6 +171,10 @@ class BoggleGui:
         self._start_window.withdraw()
         self._main_window.deiconify()
         self.start_timer()
+
+    def _set_timed_button(self):
+        self._time_remaining = 180
+        self._set_start_button()
 
     # setters / getters
     def _update_cell_color(self, cell: Cell, activate: bool, is_path_valid_word: bool):
